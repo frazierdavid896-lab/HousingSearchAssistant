@@ -1,0 +1,9 @@
+streamlit>=1.38
+pandas>=2.2
+geopandas>=1.0
+shapely>=2.0
+pyproj>=3.6
+requests>=2.31
+geopy>=2.4
+folium>=0.17
+streamlit-folium>=0.22
