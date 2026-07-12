@@ -7,3 +7,11 @@ __pycache__/
 Thumbs.db
 .DS_Store
 *.log
+
+# Generated application builds
+build/
+dist/
+HousingSearchAssistant_EXE_Build_Kit/
+*.spec
+
+HousingSearchAssistant_EXE_Build_Kit.zip
