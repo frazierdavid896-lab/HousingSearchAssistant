@@ -38,7 +38,7 @@ st.set_page_config(
 st.title("Housing Search Assistant")
 st.subheader("Automatic 2,000-Foot Property Screening")
 st.caption(
-    "Version 0.3.2: public/private K–12 schools and City of Little Rock parks."
+    "Version 0.4: schools, parks, and verified licensed/registered daycares."
 )
 
 
@@ -183,8 +183,24 @@ def locate_properties(
 
 
 @st.cache_data(ttl=86_400, show_spinner=False)
-def get_facilities() -> gpd.GeoDataFrame:
+def get_base_facilities() -> gpd.GeoDataFrame:
     return load_facilities()
+
+
+def get_facilities(daycare_upload) -> gpd.GeoDataFrame:
+    base = get_base_facilities()
+
+    if daycare_upload is None:
+        return base
+
+    daycare_upload.seek(0)
+    daycare_layer = load_facilities(
+        daycare_source=daycare_upload
+    )
+
+    # load_facilities(daycare_source=...) includes schools and parks,
+    # so return it directly rather than concatenating duplicates.
+    return daycare_layer
 
 
 def screen_properties(
@@ -390,6 +406,27 @@ for key in (
         st.session_state[key] = None
 
 
+st.sidebar.header("Daycare Data")
+
+daycare_upload = st.sidebar.file_uploader(
+    "Upload verified daycare CSV",
+    type=["csv"],
+    help=(
+        "Required columns: name, latitude, longitude. "
+        "Optional: license_status, facility_type, source_date."
+    ),
+)
+
+if daycare_upload is None:
+    st.sidebar.warning(
+        "Daycare data is not loaded. PASS results are provisional."
+    )
+else:
+    st.sidebar.success(
+        "Daycare data loaded for this screening run."
+    )
+
+
 with st.form("address_form"):
     addresses = st.text_area(
         "Paste one property address per line:",
@@ -415,14 +452,13 @@ if submitted:
     else:
         try:
             with st.spinner(
-                "Locating properties and loading "
-                "school and park data..."
+                "Locating properties and loading schools, parks, and daycare data..."
             ):
                 properties, location_results = (
                     locate_properties(addresses)
                 )
 
-                facilities = get_facilities()
+                facilities = get_facilities(daycare_upload)
 
                 summary, evidence = screen_properties(
                     properties,
@@ -460,6 +496,12 @@ if st.session_state.summary is not None:
     st.success(
         f"{len(summary)} located properties screened."
     )
+
+    if daycare_upload is None:
+        st.warning(
+            "Daycare data was not loaded. PASS results are provisional "
+            "and must not be treated as final."
+        )
 
     st.subheader("Screening Results")
 
