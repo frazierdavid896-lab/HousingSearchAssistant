@@ -1,4 +1,5 @@
-# Housing Search Assistant v1.2
+# Housing Search Assistant v1.2.1
+
 
 Polygon-first, multi-source Streamlit GIS screening for Little Rock, Arkansas.
 
@@ -31,3 +32,6 @@ streamlit run app.py
 ## Important
 
 This is a screening tool, not a legal determination. GIS sources may be incomplete, stale, or approximate.
+
+
+v1.2.1 accepts the Arkansas Facility Data.xls HTML export directly, including Windows-1252 encoded files.

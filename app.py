@@ -17,7 +17,7 @@ from reports import build_pdf
 
 st.set_page_config(page_title="Housing Search Assistant", page_icon="🏠", layout="wide")
 st.title("Housing Search Assistant")
-st.caption("Version 1.2 — polygon-first, multi-source parcel-to-facility screening")
+st.caption("Version 1.2.1 — polygon-first, multi-source parcel-to-facility screening")
 
 
 def _geocode_daycare_address(address: str) -> tuple[float | None, float | None, str]:
