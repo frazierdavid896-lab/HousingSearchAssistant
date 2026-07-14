@@ -165,6 +165,40 @@ def load_parks() -> gpd.GeoDataFrame:
     )
 
 
+def _read_csv_with_encoding_fallback(path_or_buffer) -> pd.DataFrame:
+    """
+    Read a CSV exported from Excel or another Windows application.
+
+    Tries UTF-8 first, then common Windows encodings.
+    """
+    encodings = (
+        "utf-8-sig",
+        "utf-8",
+        "cp1252",
+        "latin1",
+    )
+
+    last_error = None
+
+    for encoding in encodings:
+        try:
+            if hasattr(path_or_buffer, "seek"):
+                path_or_buffer.seek(0)
+
+            return pd.read_csv(
+                path_or_buffer,
+                encoding=encoding,
+            )
+
+        except UnicodeDecodeError as error:
+            last_error = error
+
+    raise ValueError(
+        "The daycare CSV could not be decoded. "
+        "Save it as CSV UTF-8 in Excel and upload it again."
+    ) from last_error
+
+
 def load_daycares_csv(path_or_buffer) -> gpd.GeoDataFrame:
     """
     Load a verified provider list.
@@ -175,7 +209,9 @@ def load_daycares_csv(path_or_buffer) -> gpd.GeoDataFrame:
     Optional columns:
       license_status, facility_type, address, city, state, zip, source_date
     """
-    frame = pd.read_csv(path_or_buffer)
+    frame = _read_csv_with_encoding_fallback(
+        path_or_buffer
+    )
 
     required = {"name", "latitude", "longitude"}
     missing = required - set(frame.columns)
